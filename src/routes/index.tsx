@@ -398,7 +398,22 @@ function Landing() {
 
 
       {/* Pricing */}
-      <PricingSection plans={plans ?? []} tenantId={tenantId ?? ""} onCheckout={(p) => setCheckoutPlan(p)} />
+      <PricingSection
+        plans={plans ?? []}
+        tenantId={tenantId ?? ""}
+        isLoggedIn={!!session}
+        onCheckout={(p) => {
+          if (!session) {
+            window.location.href = "/auth#signup";
+            return;
+          }
+          if (!tenantId) {
+            window.location.href = "/app";
+            return;
+          }
+          setCheckoutPlan(p);
+        }}
+      />
 
 
       {/* CTA */}
@@ -596,7 +611,7 @@ type Plan = {
   features: unknown;
 };
 
-function PricingSection({ plans, tenantId, onCheckout }: { plans: Plan[]; tenantId: string; onCheckout: (p: { id: string; name: string; price: number; billing: string }) => void }) {
+function PricingSection({ plans, tenantId, isLoggedIn, onCheckout }: { plans: Plan[]; tenantId: string; isLoggedIn: boolean; onCheckout: (p: { id: string; name: string; price: number; billing: string }) => void }) {
   const [billing, setBilling] = useState<"lifetime" | "monthly">("lifetime");
   const core = plans
     .filter((p) => p.billing === billing && p.employee_limit <= 50)
@@ -656,7 +671,7 @@ function PricingSection({ plans, tenantId, onCheckout }: { plans: Plan[]; tenant
                     variant={popular ? "default" : "outline"}
                     onClick={() => onCheckout({ id: p.id, name: p.name.replace(/ (Lifetime|Monthly)$/i, ''), price: Number(p.price_inr), billing: p.billing })}
                   >
-                    Get started <ArrowRight className="ml-1 h-4 w-4" />
+                    {isLoggedIn ? "Pay now" : "Sign up & pay"} <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
                   <ul className="mt-6 space-y-2 text-sm">
                     {featuresArr.map((f) => (
